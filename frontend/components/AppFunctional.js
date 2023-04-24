@@ -13,7 +13,7 @@ export default function AppFunctional(props) {
   const [steps, setSteps] = useState(initialSteps);
   const [index, setIndex] = useState(initialIndex);
   const [message, setMessage] = useState(initialMessage);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
 
   function getXY() {
     // It it not necessary to have a state to track the coordinates.
@@ -110,15 +110,23 @@ export default function AppFunctional(props) {
     const cord = getXY(index);
     const x = cord[1];
     const y = cord[3];
-    const postObject = { x, y, steps, email };
+    const postObject = { x, y, steps, email, index };
 
-    axios
-      .post(`http://localhost:9000/api/result`, postObject)
-      .then((res) => setMessage(res.data.message))
-      .finally(setEmail(""));
-    console.log(email);
+    if (email <= 0) {
+      setMessage("Ouch: email is required");
+    } else {
+      axios
+        .post(`http://localhost:9000/api/result`, postObject)
+        .then((res) => {
+          setMessage(res.data.message);
+          setEmail("");
+        })
+        .catch((err) => {
+          setMessage(err.response.data.message);
+          setEmail("");
+        });
+    }
   }
-  console.log(email);
   return (
     <div id="wrapper" className={props.className}>
       <div className="info">
@@ -158,10 +166,11 @@ export default function AppFunctional(props) {
         <input
           onChange={onChangeEmail}
           id="email"
+          value={email}
           type="email"
           placeholder="type email"
         ></input>
-        <input id="Submit" type="submit"></input>
+        <input id="submit" type="submit"></input>
       </form>
     </div>
   );
